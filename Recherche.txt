@@ -1,0 +1,7 @@
+Codeur
+	calcul de la vitesse à revoir
+		Filtre passe bas ? (~moyenneur)
+
+Odométrie
+	Finir la théorie
+	le programmer
