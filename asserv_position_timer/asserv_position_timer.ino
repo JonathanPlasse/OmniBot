@@ -3,8 +3,6 @@
 #include "PID_v1.h"
 #include "MCC.h"
 
-#define N 5
-
 /*Interruption*/
 //Pins des encodeurs des moteurs
 const unsigned char pinA1 = 19;
@@ -25,9 +23,9 @@ volatile long dernierCompteur1 = 0, dernierCompteur2 = 0, dernierCompteur3 = 0;
 
 /*Moteur*/
 volatile float vitesse1 = 0, vitesse2 = 0, vitesse3 = 0;//en tours/seconde
-volatile float dernieresVitesse1[N] = {0}, dernieresVitesse2[N] = {0}, dernieresVitesse3[N] = {0};
+//volatile float dernieresVitesse1[N] = {0}, dernieresVitesse2[N] = {0}, dernieresVitesse3[N] = {0};
 volatile float angle1 = 0, angle2 = 0, angle3 = 0;//en rad/seconde
-volatile const float tour = 2343.75;//408.25 pas par tour
+volatile const float tour = 8205;//nombre de pas par tour, déterminer sur 100 tours
 volatile const float tau = 6.2431;
 
 float tensionMesure = 12;
@@ -42,7 +40,7 @@ float vx = 0, vy = 3;
 const unsigned short echantillonnage = 10; //l'échantillonnage est l'intervalle de temps entre chaque calcul de la commande, exprimé en milliseconde
 const float coeffVitesse = 1000 / tour / echantillonnage;
 volatile float consignePos1 = 0, consignePos2 = 0, consignePos3 = 0; //en radian
-volatile float consigneVit1 = 3, consigneVit2 = 3/*-0.866 * vx - 0.5 * vy*/, consigneVit3 = 3/*0.866 * vx - 0.5 * vy*/; //la consigne donne la vitesse voulue du moteur en tours/seconde
+volatile float consigneVit1 = 0, consigneVit2 = 0/*-0.866 * vx - 0.5 * vy*/, consigneVit3 = 0/*0.866 * vx - 0.5 * vy*/; //la consigne donne la vitesse voulue du moteur en tours/seconde
 volatile float commande1 = 0, commande2 = 0, commande3 = 0; //la commande est le pwm envoyé sur le moteur
 
 //Réglage des coefficient des PID position
@@ -52,7 +50,7 @@ const float kdPos = 0;
 
 //Réglage des coefficient des PID vitesse
 const float kpVit = 100;
-const float kiVit = 100;
+const float kiVit = 500;
 const float kdVit = 0;
 
 PID monPIDvit1(&vitesse1, &commande1, &consigneVit1, kpVit, kiVit, kdVit, DIRECT);
@@ -127,11 +125,11 @@ bool arretObstacle()
 
 void affichage() {
   //Affichage liaison série
-  Serial.print(vitesse1);
+  Serial.print(compteur1);
+  //Serial.print(' ');
+  //Serial.print(consignePos1);
   Serial.print(' ');
-  Serial.print(consigneVit1);
-  Serial.print(' ');
-  Serial.println(5);
+  Serial.println(2);
 }
 
 void setup() {
@@ -149,15 +147,15 @@ void setup() {
   //Initialisation PID
   monPIDvit1.SetSampleTime(echantillonnage);
   monPIDvit1.SetOutputLimits(-tensionMax, tensionMax);
-  monPIDvit1.SetMode(AUTOMATIC);
+  //monPIDvit1.SetMode(AUTOMATIC);
 
   monPIDvit2.SetSampleTime(echantillonnage);
   monPIDvit2.SetOutputLimits(-tensionMax, tensionMax);
-  monPIDvit2.SetMode(AUTOMATIC);
+  //monPIDvit2.SetMode(AUTOMATIC);
 
   monPIDvit3.SetSampleTime(echantillonnage);
   monPIDvit3.SetOutputLimits(-tensionMax, tensionMax);
-  monPIDvit3.SetMode(AUTOMATIC);
+  //monPIDvit3.SetMode(AUTOMATIC);
 
   monPIDpos1.SetSampleTime(echantillonnage);
   monPIDpos1.SetOutputLimits(-vitesseMax, vitesseMax);
