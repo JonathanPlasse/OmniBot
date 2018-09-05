@@ -1,4 +1,4 @@
-#include <UsSensor.h>
+//#include <UsSensor.h>
 #include "TimerFive.h"
 #include "PID_v1.h"
 #include "MCC.h"
@@ -34,13 +34,13 @@ unsigned char tensionMax = 12 / tensionMesure * 255;
 float vitesseMax = 1;
 MCC m1(2, MOTOR12_64KHZ), m2(3, MOTOR34_64KHZ), m3(4, MOTOR34_64KHZ);
 
-float vx = 0, vy = 3;
+float vx = 0, vy = 0.5, vr = 0.5;
 
 /*PID*/
 const unsigned short echantillonnage = 10; //l'échantillonnage est l'intervalle de temps entre chaque calcul de la commande, exprimé en milliseconde
 const float coeffVitesse = 1000 / tour / echantillonnage;
 volatile float consignePos1 = 0, consignePos2 = 0, consignePos3 = 0; //en radian
-volatile float consigneVit1 = 0, consigneVit2 = 0/*-0.866 * vx - 0.5 * vy*/, consigneVit3 = 0/*0.866 * vx - 0.5 * vy*/; //la consigne donne la vitesse voulue du moteur en tours/seconde
+volatile float consigneVit1 = vy + vr, consigneVit2 = -0.866 * vx - 0.5 * vy + vr, consigneVit3 = 0.866 * vx - 0.5 * vy + vr; //la consigne donne la vitesse voulue du moteur en tours/seconde
 volatile float commande1 = 0, commande2 = 0, commande3 = 0; //la commande est le pwm envoyé sur le moteur
 
 //Réglage des coefficient des PID position
@@ -111,6 +111,7 @@ void asservissement() {
   monPIDvit1.Compute();
   monPIDvit2.Compute();
   monPIDvit3.Compute();
+  //m1.bouger((int)commande1);
   m1.bouger((int)commande1);
   m2.bouger((int)commande2);
   m3.bouger((int)commande3);
@@ -126,10 +127,10 @@ bool arretObstacle()
 void affichage() {
   //Affichage liaison série
   Serial.print(compteur1);
-  //Serial.print(' ');
-  //Serial.print(consignePos1);
-  Serial.print(' ');
-  Serial.println(2);
+  Serial.print(" ");
+  Serial.print(vitesse1);
+  Serial.print(" ");
+  Serial.println(commande1);
 }
 
 void setup() {
@@ -147,15 +148,15 @@ void setup() {
   //Initialisation PID
   monPIDvit1.SetSampleTime(echantillonnage);
   monPIDvit1.SetOutputLimits(-tensionMax, tensionMax);
-  //monPIDvit1.SetMode(AUTOMATIC);
+  monPIDvit1.SetMode(AUTOMATIC);
 
   monPIDvit2.SetSampleTime(echantillonnage);
   monPIDvit2.SetOutputLimits(-tensionMax, tensionMax);
-  //monPIDvit2.SetMode(AUTOMATIC);
+  monPIDvit2.SetMode(AUTOMATIC);
 
   monPIDvit3.SetSampleTime(echantillonnage);
   monPIDvit3.SetOutputLimits(-tensionMax, tensionMax);
-  //monPIDvit3.SetMode(AUTOMATIC);
+  monPIDvit3.SetMode(AUTOMATIC);
 
   monPIDpos1.SetSampleTime(echantillonnage);
   monPIDpos1.SetOutputLimits(-vitesseMax, vitesseMax);
