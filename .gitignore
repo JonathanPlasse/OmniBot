@@ -1,0 +1,4 @@
+#Latex
+*.div
+*.log
+*.synctex.gz
